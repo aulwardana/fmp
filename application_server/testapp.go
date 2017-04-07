@@ -1,15 +1,18 @@
 package main
 
 import (
+	"database/sql"
+	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
+	"net/http"
 	"os"
 	"runtime"
 	"sync"
 	"time"
 
-	"encoding/json"
-
+	_ "github.com/lib/pq"
 	"gopkg.in/mgo.v2"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
@@ -21,12 +24,121 @@ const (
 	username   = "aulwardana"
 	password   = "rahasia"
 	collection = "sensor"
+
+	host    = "localhost"
+	port    = 5432
+	user    = "postgres"
+	pwd     = "postgres"
+	dbname  = "postgres"
+	sslmode = "disable"
+
+	hostMQTT = "tcp://localhost:1883"
+
+	webappPort = ":8000"
 )
 
-type temp struct {
-	Code        string  `json:"Code"`
-	Temperature float32 `json:"Temperature"`
-	Humidity    float32 `json:"Humidity"`
+var templateHome = template.Must(template.ParseFiles("index.html"))
+var templateInsert = template.Must(template.ParseFiles("insert.html"))
+
+type Sensor struct {
+	Code      string  `json:"Code"`
+	Latitude  float32 `json:"Latitude"`
+	Longitude float32 `json:"Longitude"`
+	Jarak     float32 `json:"Jarak"`
+}
+
+type Place struct {
+	Uid       int
+	Name      string
+	Type      string
+	Location  string
+	State     string
+	Kawasan   string
+	Latitude  string
+	Longitude string
+}
+
+type DefaultPlace struct {
+	Latitude  string
+	Longitude string
+}
+
+func HomeTemplate(w http.ResponseWriter, r *http.Request) {
+
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s", host, port, user, pwd, dbname, sslmode)
+
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+
+	Places := []Place{}
+
+	rows, err := db.Query("SELECT * FROM public.place")
+	if err != nil {
+		http.Error(w, "Select error", 500)
+		return
+	}
+
+	for rows.Next() {
+		c := Place{}
+		err := rows.Scan(&c.Uid, &c.Name, &c.Type, &c.Location, &c.State, &c.Kawasan, &c.Latitude, &c.Longitude)
+		if err != nil {
+			http.Error(w, "Decompose error", 500)
+			return
+		}
+
+		Places = append(Places, c)
+	}
+
+	templateHome.ExecuteTemplate(w, "index.html", Places)
+}
+
+func InsertTemplate(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		DefaultPlaces := DefaultPlace{"-6.890546", "107.609505"}
+		templateInsert.ExecuteTemplate(w, "insert.html", DefaultPlaces)
+		return
+	}
+
+	nameJ := r.FormValue("name")
+	typeJ := r.FormValue("type")
+	locationJ := r.FormValue("location")
+	stateJ := r.FormValue("state")
+	kawasanJ := r.FormValue("kawasan")
+	latitudeJ := r.FormValue("lat")
+	longitudeJ := r.FormValue("long")
+
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s", host, port, user, pwd, dbname, sslmode)
+
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+
+	var lastInsertId int
+	err = db.QueryRow("INSERT INTO public.place(name, type, location, state, kawasan, latitude, longitude) VALUES($1,$2,$3,$4,$5,$6,$7) returning uid;", nameJ, typeJ, locationJ, stateJ, kawasanJ, latitudeJ, longitudeJ).Scan(&lastInsertId)
+	log.Println("last inserted id =", lastInsertId)
+
+	if err != nil {
+		http.Error(w, "Insert error", 500)
+		return
+	} else {
+		http.Redirect(w, r, "/", 301)
+		return
+	}
 }
 
 var f MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Message) {
@@ -50,7 +162,7 @@ var f MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Message) {
 	fmt.Printf("MSG: %s\n", msg.Payload())
 
 	sensing := fmt.Sprintf("%s", msg.Payload())
-	res := temp{}
+	res := Sensor{}
 	json.Unmarshal([]byte(sensing), &res)
 
 	c := session.DB(database).C(collection)
@@ -61,14 +173,18 @@ var f MQTT.MessageHandler = func(client MQTT.Client, msg MQTT.Message) {
 }
 
 func main() {
+	fs := http.FileServer(http.Dir("assets"))
+	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
+	http.HandleFunc("/", HomeTemplate)
+	http.HandleFunc("/insert", InsertTemplate)
 
 	runtime.GOMAXPROCS(1)
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
 
-	opts := MQTT.NewClientOptions().AddBroker("tcp://192.168.2.27:1883")
-	opts.SetClientID("go-simple")
+	opts := MQTT.NewClientOptions().AddBroker(hostMQTT)
+	opts.SetClientID("jarinsos")
 	opts.SetDefaultPublishHandler(f)
 
 	c := MQTT.NewClient(opts)
@@ -79,10 +195,18 @@ func main() {
 	go func() {
 		defer wg.Done()
 
-		if token := c.Subscribe("test", 0, nil); token.Wait() && token.Error() != nil {
+		log.Println("Mqtt start at port 1883")
+		if token := c.Subscribe("jarak", 0, nil); token.Wait() && token.Error() != nil {
 			fmt.Println(token.Error())
 			os.Exit(1)
 		}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		log.Println("Web Service start at port 8000")
+		http.ListenAndServe(webappPort, nil)
 	}()
 
 	wg.Wait()
