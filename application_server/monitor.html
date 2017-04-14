@@ -1,0 +1,154 @@
+<html>
+<head>
+
+  <title>Monitoring Ketinggian Air Sungai untuk Deteksi Banjir</title>
+  <base href="http://localhost:8000/js/">
+  <script src="jquery-1.8.3.min.js"></script>
+  <script language="javascript" type="text/javascript" src="flot/jquery.flot.js"></script>
+  <script language="javascript" type="text/javascript" src="flot/jquery.flot.fillbetween.js"></script>
+  
+  <script type="text/javascript">
+		
+  $(function() { 
+		var vrms = [];
+		var dataset;
+		var totalPoints = 100;
+		var updateInterval = 1000;
+		var now = new Date().getTime();
+
+		var options = {
+			series: {
+				lines: {
+					lineWidth: 1.2
+				},
+				bars: {
+					align: "center",
+					fillColor: { colors: [{ opacity: 1 }, { opacity: 1}] },
+					barWidth: 500,
+					lineWidth: 1
+				}
+			},
+			xaxis: {
+				mode: "time",
+				tickSize: [1, "second"],
+				tickFormatter: function (v, axis) {
+					var date = new Date(v);
+
+					if (date.getSeconds() % 20 == 0) {
+						var hours = date.getHours() < 10 ? "0" + date.getHours() : date.getHours();
+						var minutes = date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+						var seconds = date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+
+						return hours + ":" + minutes + ":" + seconds;
+					} else {
+						return "";
+					}
+				},
+				axisLabel: "Time",
+				axisLabelUseCanvas: true,
+				axisLabelFontSizePixels: 12,
+				axisLabelFontFamily: 'Verdana, Arial',
+				axisLabelPadding: 10
+			},
+			yaxes: [
+				{
+					min: 0,
+					max: 15,
+					tickSize: 1,
+					tickFormatter: function (v, axis) {
+						return v + "";
+					},
+					axisLabel: "Label 1",
+					axisLabelUseCanvas: true,
+					axisLabelFontSizePixels: 12,
+					axisLabelFontFamily: 'Verdana, Arial',
+					axisLabelPadding: 6
+				}
+			],
+			legend: {
+				noColumns: 0,
+				position:"nw"
+			},
+			grid: {      
+				backgroundColor: { colors: ["#ffffff", "#EDF5FF"] }
+			}
+		};
+
+		function initData() {
+			for (var i = 0; i < totalPoints; i++) {
+				var temp = [now += updateInterval, 0];
+				vrms.push(temp);
+			}
+		}
+
+		function GetData() {
+			$.ajaxSetup({ cache: false });
+
+			$.ajax({
+				url: "http://localhost:8000/getdata",
+				dataType: 'json',
+				success: update,
+				error: function () {
+					setTimeout(GetData, updateInterval);
+				}
+			});
+		}
+		
+		var temp;
+
+		function update(_data) {
+			vrms.shift();
+
+			now += updateInterval
+
+			temp = [now, _data.vrms];
+			vrms.push(temp);
+
+			dataset = [
+				{ label: "Ketinggian Air: " + _data.vrms + " CM", data: vrms, color: "#0044FF", bars: { show: true } }        
+			];
+
+			$.plot($("#chart"), dataset, options);
+			setTimeout(GetData, updateInterval);
+		}
+		
+		$(document).ready(function () {
+			initData();
+			
+			dataset = [ 
+				{ label: "Ketinggian Air: ", data: vrms, color: "#0044FF", bars: { show: true } }
+			];
+			
+
+			$.plot($("#chart"), dataset, options);
+			setTimeout(GetData, updateInterval);
+		});
+	});
+	
+	</script>
+</head>
+<body>
+  <h2>Monitoring Ketinggian Air Sungai untuk Deteksi Banjir</h2>
+  <div><a href="/">Back</a></div>
+  <div></div>
+  <div id="chart" style="height: 80%; width:100%;"></div>
+
+  <script src="jquery-1.8.3.min.js"></script>
+  <script src="jquery-slimscroll/jquery-ui-1.9.2.custom.min.js"></script>
+  <script src="jquery-slimscroll/jquery.slimscroll.min.js"></script>
+  <script src="bootstrap/js/bootstrap.min.js"></script>
+  <script src="jquery.blockui.js"></script>
+  <script src="jquery.cookie.js"></script>
+  <script src="jquery-knob/js/jquery.knob.js"></script>
+  <script src="flot/jquery.flot.js"></script>
+  <script src="flot/jquery.flot.resize.js"></script>
+  <script type="text/javascript" src="uniform/jquery.uniform.min.js"></script>
+  <script src="scripts.js"></script>
+  <script>
+	jQuery(document).ready(function() {
+		App.init();
+	});
+  </script>
+</div>
+</body>
+</html>
