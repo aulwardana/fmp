@@ -31,4 +31,4 @@ You can get our paper in IEEE, link will be give soon.
 2. [Patrice Samuel Rompas](# "patricesr")
 
 ## Acknowledgment 
-Thanks to The Education and Cultural Ministries Republic of Indonesia who have given “Beasiswa Unggulan” scholarship to me, so I can continue my studies in master program at Institut Teknologi Bandung. Hopefully this research can contribute to the technological research in Indonesia.
+Thanks to **The Education and Cultural Ministries Republic of Indonesia** who have given **“Beasiswa Unggulan”** scholarship to me, so I can continue my studies in master program at Institut Teknologi Bandung. Hopefully this research can contribute to the technological research in Indonesia.
