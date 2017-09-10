@@ -15,7 +15,7 @@ You can see FPM (Flood Monitoring Platform) application preview in [wiki FPM](# 
 ## Prerequisite Environment
 Before you deploy this platform to cloud, you must install this application :
 1. **MongoDB**, you can open port 27017 in public to remote (recomended use robomongo). Please add username and password in collection that you use for this platform.
-2. **PostgreSQL**, you can open port 5432 in public to remote (recomended use robomongo). Please add username and password in table that you use for this platform.
+2. **PostgreSQL**, you can open port 5432 in public to remote (recomended use pgadmin). Please add username and password in table that you use for this platform.
 3. **Mosquito MQTT**, this application running in port 1883. The hardware will send sensing data through this port.
 3. **Nginx**, load the platform in `localhost:8000` for default url and port.
 
