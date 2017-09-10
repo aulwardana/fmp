@@ -1,5 +1,6 @@
 ## Brief
-This hardware not implemented in real drainage system, but we use simulation that represented drainage system.
+This hardware not implemented in real drainage system, but we use simulation that represented drainage system. The hardware will capture fast flow change of drainage system water level and store data to server in every minutes.
+
 !["Image 4"](https://s19.postimg.org/upladleab/image.jpg)
 
 ## Hardware Architecture
