@@ -85,7 +85,7 @@
 			$.ajaxSetup({ cache: false });
 
 			$.ajax({
-				url: "http://localhost:8000/getdata",
+				url: "http://localhost:8000/getdata", //pull data from backend web app
 				dataType: 'json',
 				success: update,
 				error: function () {
