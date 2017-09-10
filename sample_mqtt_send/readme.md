@@ -16,3 +16,4 @@ Before you upload the program to hardware please prepare this tool :
 1. Arduino IDE
 2. NodeMCU ESP8266 installed library
 3. MQTT library for Arduino IDE
+4. WiFi Hotspot with internet connection
