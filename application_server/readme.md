@@ -3,7 +3,7 @@
 
 
 ## Application Preview
-You can see FPM (Flood Monitoring Platform) application preview in [wiki FPM](# "wiki FPM").
+You can see FPM (Flood Monitoring Platform) application preview in [wiki FPM](https://gitlab.com/aulwardana/fmp/wikis/Preview-Platform "wiki FPM").
 
 
 ## Server Requirement
