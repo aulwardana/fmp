@@ -23,7 +23,7 @@ We use some technology to build the hardware, there is :
 
 
 ## Research Detail
-You can get our paper in IEEE, link will be give soon.
+You can get our paper in IEEE, link is available [here](http://ieeexplore.ieee.org/document/8267949/ "IEEE Link").
 
 
 ## Contributor
@@ -31,4 +31,4 @@ You can get our paper in IEEE, link will be give soon.
 2. [Patrice Samuel Rompas](https://www.linkedin.com/in/psrompas "patricesr")
 
 ## Acknowledgment 
-Thanks to **The Education and Cultural Ministries Republic of Indonesia** who have given **“Beasiswa Unggulan”** scholarship to me, so I can continue my studies in master program at Institut Teknologi Bandung. Hopefully this research can contribute to the technological research in Indonesia.
+Gratitude to the **Ministry of Education and Culture of The Republic of Indonesia** who has granted **"Beasiswa Unggulan"** scholarship to the second author so he can continue his studies to the master program at Institut Teknologi Bandung. Hopefully, this research can contribute to the advancement of technology research in Indonesia.
